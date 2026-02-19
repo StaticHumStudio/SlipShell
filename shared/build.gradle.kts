@@ -39,6 +39,7 @@ kotlin {
             implementation(libs.sqldelight.android.driver)
             implementation(libs.koin.android)
             implementation(libs.kotlinx.coroutines.android)
+            implementation(libs.security.crypto)
         }
     }
 }

@@ -30,6 +30,8 @@ kotlin {
             // AndroidX
             implementation(libs.core.ktx)
             implementation(libs.webkit)
+            implementation(libs.lifecycle.viewmodel.compose)
+            implementation(libs.lifecycle.runtime.compose)
 
             // Koin
             implementation(libs.koin.android)

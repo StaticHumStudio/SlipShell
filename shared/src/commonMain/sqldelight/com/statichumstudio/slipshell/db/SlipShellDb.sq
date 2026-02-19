@@ -1,6 +1,58 @@
--- Placeholder schema for Phase 0
--- Tables will be added in Phase 1
-CREATE TABLE IF NOT EXISTS AppInfo (
-    key TEXT NOT NULL PRIMARY KEY,
-    value TEXT NOT NULL
+CREATE TABLE ServerProfile (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    hostname TEXT NOT NULL,
+    port INTEGER NOT NULL DEFAULT 22,
+    username TEXT NOT NULL,
+    authMethod TEXT NOT NULL DEFAULT 'password',
+    groupName TEXT NOT NULL DEFAULT '',
+    colorTag TEXT NOT NULL DEFAULT '#FF6B35',
+    notes TEXT NOT NULL DEFAULT '',
+    lastConnected INTEGER,
+    sortOrder INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL
 );
+
+selectAll:
+SELECT * FROM ServerProfile ORDER BY sortOrder ASC, name ASC;
+
+selectById:
+SELECT * FROM ServerProfile WHERE id = ?;
+
+selectByGroup:
+SELECT * FROM ServerProfile WHERE groupName = ? ORDER BY sortOrder ASC, name ASC;
+
+selectGroups:
+SELECT DISTINCT groupName FROM ServerProfile ORDER BY groupName ASC;
+
+insert:
+INSERT INTO ServerProfile (id, name, hostname, port, username, authMethod, groupName, colorTag, notes, lastConnected, sortOrder, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE ServerProfile SET
+    name = ?,
+    hostname = ?,
+    port = ?,
+    username = ?,
+    authMethod = ?,
+    groupName = ?,
+    colorTag = ?,
+    notes = ?,
+    sortOrder = ?,
+    updatedAt = ?
+WHERE id = ?;
+
+delete:
+DELETE FROM ServerProfile WHERE id = ?;
+
+updateLastConnected:
+UPDATE ServerProfile SET lastConnected = ?, updatedAt = ? WHERE id = ?;
+
+search:
+SELECT * FROM ServerProfile
+WHERE name LIKE '%' || ? || '%'
+   OR hostname LIKE '%' || ? || '%'
+   OR username LIKE '%' || ? || '%'
+ORDER BY sortOrder ASC, name ASC;

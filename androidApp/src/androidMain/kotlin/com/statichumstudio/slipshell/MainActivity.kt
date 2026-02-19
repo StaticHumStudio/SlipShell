@@ -16,11 +16,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.statichumstudio.slipshell.ui.navigation.Screen
+import com.statichumstudio.slipshell.ui.screens.AddEditServerScreen
 import com.statichumstudio.slipshell.ui.screens.ServersScreen
 import com.statichumstudio.slipshell.ui.screens.SettingsScreen
 import com.statichumstudio.slipshell.ui.screens.TerminalScreen
@@ -32,38 +35,43 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SlipShellTheme {
-                SlipShellApp()
+                SlipShellMain()
             }
         }
     }
 }
 
 @Composable
-fun SlipShellApp() {
+fun SlipShellMain() {
     val navController = rememberNavController()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentRoute = navBackStackEntry?.destination?.route
 
-                Screen.bottomNavItems.forEach { screen ->
-                    NavigationBarItem(
-                        icon = { Icon(screen.icon, contentDescription = screen.title) },
-                        label = { Text(screen.title) },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+            // Hide bottom nav on add/edit screen
+            if (currentRoute?.startsWith("addEditServer") != true) {
+                NavigationBar {
+                    val currentDestination = navBackStackEntry?.destination
+
+                    Screen.bottomNavItems.forEach { screen ->
+                        NavigationBarItem(
+                            icon = { Icon(screen.icon, contentDescription = screen.title) },
+                            label = { Text(screen.title) },
+                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                            onClick = {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -73,9 +81,30 @@ fun SlipShellApp() {
             startDestination = Screen.Servers.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Screen.Servers.route) { ServersScreen() }
+            composable(Screen.Servers.route) {
+                ServersScreen(
+                    onAddServer = { navController.navigate("addEditServer") },
+                    onEditServer = { id -> navController.navigate("addEditServer?serverId=$id") },
+                )
+            }
             composable(Screen.Terminal.route) { TerminalScreen() }
             composable(Screen.Settings.route) { SettingsScreen() }
+            composable(
+                route = "addEditServer?serverId={serverId}",
+                arguments = listOf(
+                    navArgument("serverId") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                ),
+            ) { backStackEntry ->
+                val serverId = backStackEntry.arguments?.getString("serverId")
+                AddEditServerScreen(
+                    serverId = serverId,
+                    onBack = { navController.popBackStack() },
+                )
+            }
         }
     }
 }
