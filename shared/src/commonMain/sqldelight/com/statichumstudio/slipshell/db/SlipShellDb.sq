@@ -1,0 +1,6 @@
+-- Placeholder schema for Phase 0
+-- Tables will be added in Phase 1
+CREATE TABLE IF NOT EXISTS AppInfo (
+    key TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
